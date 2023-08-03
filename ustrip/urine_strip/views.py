@@ -1,7 +1,11 @@
 from django.shortcuts import render
+from django.http import HttpResponse
+import json
 import cv2
 from .models import UStrip
 import numpy as np
+from rest_framework import viewsets,views,generics
+from .serializers import UStripSerializer
 
 def analyze_colors(image):
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
@@ -19,7 +23,7 @@ def analyze_colors(image):
             color_roi = image[y:y + h, x:x + w]
             pixel_color = color_roi[0, 0]
 
-            color_name = ['URO', 'BIL', 'KET', 'BLD', 'PRO', 'NIT', 'LEU', 'GLU', 'SG', 'PH'][i]
+            color_name = ['Urobilinogen', 'Bilirubin', 'Ketones', 'Blood', 'Protein', 'Nitrite', 'Leukocytes', 'Glucose', 'Specific Gravity', 'pH'][i]
             rgb_values = [int(pixel_color[2]), int(pixel_color[1]), int(pixel_color[0])]
 
             analyzed_colors[color_name] = rgb_values
@@ -37,3 +41,15 @@ def index(request):
         urine_strip.save()
         return render(request, 'index.html', {'analyzed_colors': analyzed_colors})
     return render(request, 'index.html')
+
+class UStripViewSet(generics.ListAPIView):
+    queryset = UStrip.objects.all()
+    serializer_class = UStripSerializer
+
+    def post(self,request,*args,**kwargs):
+        file = request.data['file']
+        img = cv2.imdecode(np.fromstring(file.read(), np.uint8), cv2.IMREAD_UNCHANGED)
+        analyzed_colors = analyze_colors(img)
+        urine_strip = UStrip(image=file, colors=analyzed_colors)
+        urine_strip.save()
+        return HttpResponse(json.dumps(analyzed_colors),status=200)
