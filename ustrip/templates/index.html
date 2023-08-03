@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Urine Strip Analyzer</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+        h1 {
+            color: #333;
+        }
+        form {
+            margin-bottom: 20px;
+        }
+        input[type="file"] {
+            display: block;
+            margin-bottom: 10px;
+        }
+        input[type="submit"] {
+            background-color: #333;
+            color: #fff;
+            padding: 8px 16px;
+            border: none;
+            cursor: pointer;
+        }
+        input[type="submit"]:hover {
+            background-color: #555;
+        }
+        h2 {
+            color: #333;
+            margin-top: 20px;
+        }
+        ul {
+            list-style: none;
+            padding: 0;
+        }
+        li {
+            margin-bottom: 10px;
+        }
+        .color-square {
+            width: 20px;
+            height: 20px;
+            display: inline-block;
+            margin-right: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Upload an Image of the Urine Strip</h1>
+    <form method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+        <input type="file" name="image" accept="image/*" required>
+        <input type="submit" value="Upload">
+    </form>
+
+    {% if analyzed_colors %}
+        <h2>Color Results:</h2>
+        <ul>
+            {% for key, color in analyzed_colors.items %}
+                <li>
+                    <span class="color-square" style="background-color: rgb({{ color.0 }}, {{ color.1 }}, {{ color.2 }});"></span>
+                    {{ key }}: R: {{ color.0 }}, G: {{ color.1 }}, B: {{ color.2 }}
+                </li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+</body>
+</html>
