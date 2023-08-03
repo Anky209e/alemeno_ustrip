@@ -1,0 +1,5 @@
+opncv-python
+django
+django-rest-framework
+numpy
+pillow

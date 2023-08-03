@@ -8,6 +8,10 @@ from rest_framework import viewsets,views,generics
 from .serializers import UStripSerializer
 
 def analyze_colors(image):
+    """
+    Find all present colors in Strip
+    return: json with all color present
+    """
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
     _, threshold = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)
     contours, _ = cv2.findContours(threshold, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
@@ -31,6 +35,9 @@ def analyze_colors(image):
     return analyzed_colors
 
 def index(request):
+    """
+    Handeling Web page Image upload
+    """
     if request.method == 'POST' and request.FILES['image']:
         image = request.FILES['image']
         
@@ -43,10 +50,16 @@ def index(request):
     return render(request, 'index.html')
 
 class UStripViewSet(generics.ListAPIView):
+    """
+    Rest ViewSet for api/ endpoint
+    """
     queryset = UStrip.objects.all()
     serializer_class = UStripSerializer
 
     def post(self,request,*args,**kwargs):
+        """
+        POST request method for handeling upload via api
+        """
         file = request.data['file']
         img = cv2.imdecode(np.fromstring(file.read(), np.uint8), cv2.IMREAD_UNCHANGED)
         analyzed_colors = analyze_colors(img)
